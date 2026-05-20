@@ -34,7 +34,7 @@ Rules:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama2-uncensored',
+        model: 'qwen2.5:3b',
         prompt,
         stream: false,
         options: {

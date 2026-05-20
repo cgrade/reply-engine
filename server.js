@@ -8,26 +8,9 @@ app.use(express.json())
 
 app.post('/api/generate', async (req, res) => {
   try {
-    const { system, platform, tone, post } = req.body
+    const { post } = req.body
 
-    const prompt = `
-${system}
-
-Platform: ${platform}
-Tone: ${tone}
-
-Post:
-${post}
-
-Write ONE emotionally intelligent reply.
-
-Rules:
-- Under 250 characters
-- Sound deeply human
-- No hashtags
-- No promotion
-- Output ONLY the reply
-`
+    console.log('REQUEST RECEIVED')
 
     const response = await fetch('http://localhost:11434/api/generate', {
       method: 'POST',
@@ -35,26 +18,34 @@ Rules:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama3.1:8b',
-        prompt,
+        model: 'qwen2.5:3b',
+        prompt: `Reply warmly to this post in under 150 characters:\n\n${post}`,
         stream: false,
+        options: {
+          temperature: 0.7,
+          num_predict: 60,
+        },
       }),
     })
 
+    console.log('OLLAMA RESPONDED')
+
     const data = await response.json()
 
-    res.json({
-      reply: data.response?.trim(),
+    console.log(data)
+
+    return res.json({
+      reply: data.response || 'No response generated.',
     })
   } catch (err) {
     console.error(err)
 
-    res.status(500).json({
+    return res.status(500).json({
       error: err.message,
     })
   }
 })
 
 app.listen(3001, () => {
-  console.log('Server running on http://localhost:3001')
+  console.log('Server running on port 3001')
 })
