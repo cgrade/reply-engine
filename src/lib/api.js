@@ -1,5 +1,7 @@
+const API_URL = import.meta.env.VITE_API_URL || '/api/generate'
+
 export async function generateReply(payload) {
-  const res = await fetch('http://localhost:3001/api/generate', {
+  const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -7,11 +9,15 @@ export async function generateReply(payload) {
     body: JSON.stringify(payload),
   })
 
-  if (!res.ok) {
-    const err = await res.json()
+  const data = await response.json()
 
-    throw new Error(err.error || 'Generation failed')
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to generate reply')
   }
 
-  return await res.json()
+  if (!data.reply?.trim()) {
+    throw new Error('Model returned an empty reply')
+  }
+
+  return data
 }

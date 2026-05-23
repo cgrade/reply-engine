@@ -1,51 +1,35 @@
-import express from 'express'
+import express, { json } from 'express'
 import cors from 'cors'
+import dotenv from 'dotenv'
+import { generateReply } from './lib/groq.mjs'
+
+dotenv.config()
 
 const app = express()
 
 app.use(cors())
-app.use(express.json())
+app.use(json())
 
 app.post('/api/generate', async (req, res) => {
   try {
-    const { post } = req.body
+    const { platform, tone, postText, post, extraContext } = req.body ?? {}
+    const text = postText ?? post
 
-    console.log('REQUEST RECEIVED')
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: 'postText is required' })
+    }
 
-    const response = await fetch('http://localhost:11434/api/generate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'qwen2.5:3b',
-        prompt: `Reply warmly to this post in under 150 characters:\n\n${post}`,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          num_predict: 60,
-        },
-      }),
-    })
-
-    console.log('OLLAMA RESPONDED')
-
-    const data = await response.json()
-
-    console.log(data)
-
-    return res.json({
-      reply: data.response || 'No response generated.',
-    })
-  } catch (err) {
-    console.error(err)
+    const reply = await generateReply(platform, tone, text, extraContext)
+    return res.status(200).json({ reply })
+  } catch (error) {
+    console.error('Groq API error:', error.message)
 
     return res.status(500).json({
-      error: err.message,
+      error: error.message || 'Failed to generate reply',
     })
   }
 })
 
 app.listen(3001, () => {
-  console.log('Server running on port 3001')
+  console.log('Server running on http://localhost:3001')
 })

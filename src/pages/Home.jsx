@@ -7,7 +7,6 @@ import ReplyCard from "../components/ReplyCard";
 import ReplyHistory from "../components/ReplyHistory";
 
 import { PLATFORMS, TONES } from "../lib/constants";
-import { BRAND_SYSTEM_PROMPT } from "../lib/prompts";
 import { generateReply } from "../lib/api";
 
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -20,6 +19,7 @@ export default function Home() {
 
   const [postText, setPostText] = useState("");
   const [reply, setReply] = useState("");
+  const [error, setError] = useState("");
   const [mock, setMock] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -27,26 +27,30 @@ export default function Home() {
     if (!postText.trim()) return;
 
     setLoading(true);
+    setError("");
 
     try {
       const data = await generateReply({
-        system: BRAND_SYSTEM_PROMPT,
         platform,
         tone,
         post: postText,
       });
 
       setReply(data.reply);
-      setMock(data.mock);
+      setMock(data.mock ?? false);
 
       setHistory([
         {
           id: Date.now(),
           platform,
+          tone,
           reply: data.reply,
         },
         ...history,
       ]);
+    } catch (err) {
+      setError(err.message || "Could not generate reply.");
+      setReply("");
     } finally {
       setLoading(false);
     }
@@ -112,6 +116,12 @@ export default function Home() {
             <WandSparkles size={18} />
             {loading ? "Generating..." : "Generate Reply"}
           </button>
+
+          {error && (
+            <p className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              {error}
+            </p>
+          )}
         </div>
         {reply && (
           <ReplyCard

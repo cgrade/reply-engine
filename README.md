@@ -1,16 +1,17 @@
-# React + Vite
+# Reply Engine (Intimova)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AI-powered social reply generator.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Add `GROQ_API_KEY` to `.env` (get one at [console.groq.com](https://console.groq.com) — keys start with `gsk_`).
+2. Start the API: `npm run server` (port 3001).
+3. Start the UI: `npm run dev` (port 5173). Vite proxies `/api` to the local server.
 
-## React Compiler
+## Deploy to Vercel
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Push the repo and import the project in Vercel.
+2. Set **Environment variable**: `GROQ_API_KEY`.
+3. Deploy. The UI is served from `dist`; `api/generate.js` runs as a serverless function at `/api/generate`.
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+You do **not** need `server.js` on Vercel — only the `api/` route and static build.

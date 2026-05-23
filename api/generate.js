@@ -1,61 +1,25 @@
+import { generateReply } from '../lib/groq.mjs'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    })
+    return res.status(405).json({ error: 'Method not allowed' })
   }
 
   try {
-    const { system, platform, tone, post } = req.body
+    const { platform, tone, postText, post, extraContext } = req.body ?? {}
+    const text = postText ?? post
 
-    const prompt = `
-${system}
-
-Platform: ${platform}
-Tone: ${tone}
-
-Post:
-${post}
-
-Write ONE emotionally intelligent reply.
-
-Rules:
-- Under 250 characters
-- Sound deeply human
-- Nigerian warmth is welcome
-- No hashtags
-- No promotion
-- Output ONLY the reply
-`
-
-    const response = await fetch('http://localhost:11434/api/generate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'qwen2.5:3b',
-        prompt,
-        stream: false,
-        options: {
-          temperature: 0.9,
-          top_p: 0.95,
-        },
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error('Could not connect to Ollama')
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: 'postText is required' })
     }
 
-    const data = await response.json()
+    const reply = await generateReply(platform, tone, text, extraContext)
+    return res.status(200).json({ reply })
+  } catch (error) {
+    console.error('Groq API error:', error.message)
 
-    return res.status(200).json({
-      reply: data.response?.trim(),
-    })
-  } catch (err) {
     return res.status(500).json({
-      error: err.message,
+      error: error.message || 'Failed to generate reply',
     })
   }
 }
