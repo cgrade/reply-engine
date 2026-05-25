@@ -103,7 +103,7 @@ export default function Home() {
               rows={7}
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
-              placeholder="Paste the tweet, caption, or post here..."
+              placeholder="Paste the post context — caption, what they said, carousel text, or video summary..."
               className="w-full rounded-2xl border border-white/10 bg-black/30 p-4 text-[#FAF5F0] outline-none focus:border-[#C9847A]/50"
             />
           </div>
