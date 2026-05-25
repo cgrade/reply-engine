@@ -1,7 +1,7 @@
 import express, { json } from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import { generateReply } from './lib/groq.mjs'
+import { generateReplies } from './lib/groq.mjs'
 
 dotenv.config()
 
@@ -12,15 +12,32 @@ app.use(json())
 
 app.post('/api/generate', async (req, res) => {
   try {
-    const { platform, tone, postText, post, extraContext } = req.body ?? {}
+    const {
+      platform,
+      tone,
+      postText,
+      post,
+      extraContext,
+      postType,
+      variants,
+    } = req.body ?? {}
+
     const text = postText ?? post
 
     if (!text || !text.trim()) {
       return res.status(400).json({ error: 'postText is required' })
     }
 
-    const reply = await generateReply(platform, tone, text, extraContext)
-    return res.status(200).json({ reply })
+    const result = await generateReplies({
+      platform,
+      tone,
+      postText: text,
+      extraContext,
+      postType,
+      variants: Boolean(variants),
+    })
+
+    return res.status(200).json(result)
   } catch (error) {
     console.error('Groq API error:', error.message)
 

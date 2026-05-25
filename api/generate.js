@@ -1,4 +1,4 @@
-import { generateReply } from '../lib/groq.mjs'
+import { generateReplies } from '../lib/groq.mjs'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -6,15 +6,32 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { platform, tone, postText, post, extraContext } = req.body ?? {}
+    const {
+      platform,
+      tone,
+      postText,
+      post,
+      extraContext,
+      postType,
+      variants,
+    } = req.body ?? {}
+
     const text = postText ?? post
 
     if (!text || !text.trim()) {
       return res.status(400).json({ error: 'postText is required' })
     }
 
-    const reply = await generateReply(platform, tone, text, extraContext)
-    return res.status(200).json({ reply })
+    const result = await generateReplies({
+      platform,
+      tone,
+      postText: text,
+      extraContext,
+      postType,
+      variants: Boolean(variants),
+    })
+
+    return res.status(200).json(result)
   } catch (error) {
     console.error('Groq API error:', error.message)
 
